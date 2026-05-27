@@ -1,0 +1,213 @@
+{{!--
+SKELETON — distilled from password-protected/src/site/embedded-scripts/page-lock/embedded.html (635 lines).
+Goes at: src/site/embedded-scripts/<slug>/embedded.html
+
+Demonstrates the canonical PRPL embedded-script patterns:
+  1. Three {{placeholders}} → templated by embeddedScripts.embedScript({ parameters })
+  2. base64-encoded JSON in placeholders (string-only param API)
+  3. document.documentElement.classList.add('pp-locked') BEFORE DOM ready (avoid flash)
+  4. Client-side SHA-256 verify (no network round-trip — instant)
+  5. Path matching with site-prefix stripping (Wix sites add /<site-name> prefix)
+  6. localStorage 'remember visitor' with TTL or forever
+  7. NO inline secrets — all config flows from dashboard via embedScript()
+
+The full lock-screen styling (lines 1-380 of original) is omitted here — copy verbatim
+from ~/Documents/Wix apps Backup/password-protected/src/site/embedded-scripts/page-lock/embedded.html
+when scaffolding a new lock-screen app.
+--}}
+
+<div
+  id="pp-lock-config"
+  data-protected-pages="{{protectedPages}}"
+  data-site-wide-lock="{{siteWideLock}}"
+  data-enabled="{{enabled}}"
+></div>
+
+<style>
+  html.pp-locked, html.pp-locked body { overflow: hidden !important; }
+  body.pp-locked > *:not(#pp-lock-overlay):not(#pp-lock-config):not(script):not(style) {
+    visibility: hidden !important;
+  }
+  /* … full lock-overlay styling: 350 lines of CSS for #pp-lock-overlay,
+       #pp-lock-card, #pp-lock-input, animations (ppFadeIn/ppSlideUp/ppShake/ppPulse),
+       responsive breakpoints, etc. Copy verbatim from the original file. */
+</style>
+
+<script>
+(function () {
+  // (1) HIDE EVERYTHING IMMEDIATELY — before DOM-ready, before the lock overlay paints.
+  // Without this, content flashes for ~50ms before the lock takes over.
+  const configEl = document.getElementById("pp-lock-config");
+  if (!configEl) return;
+  if (configEl.getAttribute("data-enabled") !== "true") return;
+
+  document.documentElement.classList.add("pp-locked");
+  if (document.body) document.body.classList.add("pp-locked");
+  else document.addEventListener("DOMContentLoaded", () => document.body.classList.add("pp-locked"));
+
+  // (2) Read & decode placeholders
+  function b64decode(s) {
+    return decodeURIComponent(atob(s).split("").map(
+      (c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2)
+    ).join(""));
+  }
+
+  const raw = configEl.getAttribute("data-protected-pages");
+  let pages = [];
+  try {
+    if (raw && raw !== "" && raw !== "W10=") pages = JSON.parse(b64decode(raw));
+  } catch {}
+  if (!Array.isArray(pages)) pages = [];
+
+  let siteWideLock = null;
+  const swRaw = configEl.getAttribute("data-site-wide-lock");
+  if (swRaw && swRaw !== "") {
+    try {
+      const parsed = JSON.parse(b64decode(swRaw));
+      if (parsed && parsed.passwordHash) siteWideLock = parsed;
+    } catch {}
+  }
+
+  if (pages.length === 0 && !siteWideLock) {
+    document.documentElement.classList.remove("pp-locked");
+    return;
+  }
+
+  // (3) Path matching — Wix-hosted sites add a /<site-name> prefix
+  const STORAGE_PREFIX = "@<APP_NS>:remember";
+
+  function normalizePath(p) {
+    if (!p) return "/";
+    return p.toLowerCase().replace(/\/+$/, "") || "/";
+  }
+  function stripSitePrefix(pathname) {
+    const segments = pathname.split("/").filter(Boolean);
+    return segments.length > 1 ? "/" + segments.slice(1).join("/") : "/";
+  }
+  function pathMatches(storedPath, currentFull) {
+    const stored = normalizePath(storedPath);
+    const full = normalizePath(currentFull);
+    const short = stripSitePrefix(full);
+    if (stored === full || stored === short) return true;
+    if (stored !== "/" && (full.startsWith(stored + "/") || short.startsWith(stored + "/"))) return true;
+    return false;
+  }
+
+  // (4) Client-side SHA-256 — no backend round-trip
+  async function sha256(text) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(text);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+    return Array.from(new Uint8Array(hashBuffer))
+      .map((b) => b.toString(16).padStart(2, "0")).join("");
+  }
+
+  // (5) "Remember visitor" — TTL or forever via localStorage
+  function getStorageKey(pagePath) { return STORAGE_PREFIX + ":" + pagePath; }
+  function checkRemember(pagePath) {
+    try {
+      const stored = localStorage.getItem(getStorageKey(pagePath));
+      if (stored === null) return false;
+      const end = Number(stored);
+      if (Number.isNaN(end)) return false;
+      if (end === 0) return true;          // forever
+      return end > Date.now();              // TTL not expired
+    } catch { return false; }
+  }
+  function saveRemember(pagePath, duration) {
+    if (!duration || duration === "no") return;
+    try {
+      const end = duration === "forever" ? 0
+        : Date.now() + Number(duration) * 24 * 60 * 60 * 1000;
+      localStorage.setItem(getStorageKey(pagePath), String(end));
+    } catch {}
+  }
+
+  function unlock() {
+    document.documentElement.classList.remove("pp-locked");
+    document.body.classList.remove("pp-locked");
+  }
+
+  // (6) Pick the right config for this page (site-wide takes precedence)
+  async function initialize() {
+    const currentPath = window.location.pathname;
+    const pageConfig = siteWideLock
+      ? siteWideLock
+      : pages.find((p) => pathMatches(p.pagePath, currentPath));
+
+    if (!pageConfig) { unlock(); return; }
+
+    const rememberKey = siteWideLock ? "__site_wide__" : currentPath;
+    if (checkRemember(rememberKey)) { unlock(); return; }
+
+    // (7) Render lock overlay — full implementation in original file.
+    // Reads pageConfig fields: passwordHash, customTitle, customSubtitle, logoUrl,
+    // bgImageUrl, bgOverlayOpacity, inputBorderRadius, buttonBorderRadius, buttonColor,
+    // showPasswordToggle, isPremium (for "powered by" footer), wrongPasswordAction,
+    // redirectUrl, wrongPasswordMessage, rememberVisitor.
+    const overlay = document.createElement("div");
+    overlay.id = "pp-lock-overlay";
+    overlay.innerHTML = renderLockCardHtml(pageConfig);   // ~50 lines of HTML build
+    document.body.appendChild(overlay);
+    document.body.style.overflow = "hidden";
+
+    const form = document.getElementById("pp-lock-form");
+    const input = document.getElementById("pp-lock-input");
+    const submitBtn = document.getElementById("pp-lock-submit");
+    const errorEl = document.getElementById("pp-lock-error");
+
+    input.focus();
+
+    form.addEventListener("submit", async function (e) {
+      e.preventDefault();
+      submitBtn.disabled = true;
+
+      try {
+        const hash = await sha256(input.value);
+
+        if (hash === pageConfig.passwordHash) {
+          saveRemember(rememberKey, pageConfig.rememberVisitor);
+          overlay.style.transition = "opacity 0.35s ease-out";
+          overlay.style.opacity = "0";
+          setTimeout(function () {
+            document.body.style.overflow = "";
+            overlay.remove();
+            unlock();
+          }, 350);
+          return;
+        }
+
+        // Wrong password → either redirect or shake message
+        if (pageConfig.wrongPasswordAction === "redirect" && pageConfig.redirectUrl?.trim()) {
+          let rUrl = pageConfig.redirectUrl.trim();
+          if (!/^https?:\/\//i.test(rUrl)) rUrl = "https://" + rUrl;
+          window.location.href = rUrl;
+          return;
+        }
+
+        errorEl.textContent = pageConfig.wrongPasswordMessage?.trim()
+          || "Wrong password. Please try again.";
+        errorEl.classList.add("pp-shake");
+        input.value = "";
+        input.focus();
+      } catch (err) {
+        errorEl.textContent = "Something went wrong. Please try again.";
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
+  }
+
+  function renderLockCardHtml(/* pageConfig */) {
+    // ~80 lines that build the overlay HTML from pageConfig.
+    // See original file for the full logo / title / subtitle / bg / eye-toggle / submit-button mark-up.
+    return "<!-- omitted in skeleton -->";
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initialize);
+  } else {
+    initialize();
+  }
+})();
+</script>

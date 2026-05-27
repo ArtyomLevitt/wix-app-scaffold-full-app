@@ -1,0 +1,8 @@
+{
+  "_comment": "Dev-time defaults for the embedded.html {{placeholders}}. Used by `wix dev`. Production values are pushed by pushEmbeddedScript().",
+  "protectedPages": "W10=",
+  "_protectedPages_comment": "Base64 of '[]' — empty array of per-page lock configs.",
+  "siteWideLock": "<BASE64_OF_SITE_WIDE_CONFIG_JSON>",
+  "_siteWideLock_comment": "Base64 of a JSON object: { pagePath, passwordHash, rememberVisitor, wrongPasswordAction, redirectUrl, wrongPasswordMessage, logoUrl, bgImageUrl, bgOverlayOpacity, inputBorderRadius, showPasswordToggle, buttonBorderRadius, buttonColor, customTitle, customSubtitle, isPremium }. Set to empty string to disable site-wide lock.",
+  "enabled": "true"
+}

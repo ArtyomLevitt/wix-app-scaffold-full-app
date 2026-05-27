@@ -1,0 +1,6 @@
+{
+  "$schema": "https://dev.wix.com/wix-cli/schemas/ecom-validations.json",
+  "id": "<SERVICE_PLUGIN_UUID>",
+  "name": "my-service-plugin",
+  "validateInCart": true
+}

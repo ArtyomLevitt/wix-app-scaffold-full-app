@@ -1,0 +1,7 @@
+{
+  "$schema": "https://dev.wix.com/wix-cli/schemas/embedded-script.json",
+  "id": "<EMBEDDED_SCRIPT_UUID>",
+  "name": "Page Lock",
+  "scriptType": "ESSENTIAL",
+  "placement": "HEAD"
+}

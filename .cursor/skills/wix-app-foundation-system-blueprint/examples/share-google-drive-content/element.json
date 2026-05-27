@@ -1,0 +1,27 @@
+{
+  "$schema": "https://dev.wix.com/wix-cli/schemas/custom-element.json",
+  "id": "<WIDGET_UUID>",
+  "name": "Google Drive Viewer",
+  "width": {
+    "defaultWidth": 720,
+    "stretchByDefault": false,
+    "allowStretch": true
+  },
+  "height": {
+    "defaultHeight": 600
+  },
+  "installation": {
+    "autoAddToSite": true
+  },
+  "behaviors": {
+    "dashboard": {
+      "dashboardPageComponentId": "<DASHBOARD_PAGE_ID_FROM_PAGE.JSON>"
+    }
+  },
+  "presets": [
+    {
+      "id": "<PRESET_UUID>",
+      "thumbnailUrl": "../../../../assets/google-drive-viewer/thumbnail.png"
+    }
+  ]
+}

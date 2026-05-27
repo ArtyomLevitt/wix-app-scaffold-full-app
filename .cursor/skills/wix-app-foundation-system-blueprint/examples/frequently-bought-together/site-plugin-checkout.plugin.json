@@ -1,0 +1,19 @@
+{
+  "$schema": "https://dev.wix.com/wix-cli/schemas/site-plugin.json",
+  "id": "<PLUGIN_INSTANCE_UUID>",
+  "referenceComponentId": "<COMPONENT_REGISTRATION_UUID>",
+  "marketData": {
+    "name": "FBT Checkout",
+    "logoUrl": "../../../../assets/fbt-checkout/logo.svg"
+  },
+  "placements": [
+    {
+      "appDefinitionId": "1380b703-ce81-ff05-f115-39571d94dfcd",
+      "widgetId": "14fd5970-8072-c276-1246-058b79e70c1a",
+      "slotId": "checkout:summary:lineItems:after"
+    }
+  ],
+  "installation": {
+    "autoAddToSite": true
+  }
+}
