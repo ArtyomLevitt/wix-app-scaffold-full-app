@@ -1,7 +1,7 @@
-import { type FC, type ReactNode } from 'react';
+import React, { type CSSProperties, type FC, type ReactNode } from 'react';
 import { Badge, Box, Text } from '@wix/design-system';
 
-const SHIMMER: React.CSSProperties = {
+const SHIMMER: CSSProperties = {
   background: 'linear-gradient(90deg, #F0F2F5 25%, #E4E6EB 37%, #F0F2F5 63%)',
   backgroundSize: '800px 100%',
   animation: 'prpl-shimmer 1.4s ease infinite',

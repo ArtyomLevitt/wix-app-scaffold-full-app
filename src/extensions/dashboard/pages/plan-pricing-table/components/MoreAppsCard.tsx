@@ -1,4 +1,4 @@
-import { type FC } from 'react';
+import React, { type FC } from 'react';
 import { useIntl } from 'react-intl';
 import { Box, Button, Card, Text, TextButton } from '@wix/design-system';
 import * as Icons from '@wix/wix-ui-icons-common';
