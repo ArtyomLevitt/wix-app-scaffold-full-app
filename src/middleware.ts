@@ -1,35 +1,28 @@
-import type { MiddlewareHandler } from 'astro';
+import { defineMiddleware } from 'astro:middleware';
 
-function corsHeaders(request: Request): HeadersInit {
-  const origin = request.headers.get('Origin') ?? '*';
-  return {
-    'Access-Control-Allow-Origin': origin,
-    'Access-Control-Allow-Credentials': 'true',
-    'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+const buildCorsHeaders = (request: Request): Record<string, string> => {
+  const origin = request.headers.get('origin');
+  const requestedHeaders =
+    request.headers.get('access-control-request-headers') || 'Content-Type, Authorization';
+  const headers: Record<string, string> = {
+    'Access-Control-Allow-Origin': origin || '*',
     Vary: 'Origin',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': requestedHeaders,
+    'Access-Control-Max-Age': '86400',
   };
-}
-
-export const onRequest: MiddlewareHandler = async (context, next) => {
-  const { request, url } = context;
-
-  if (!url.pathname.startsWith('/api/')) {
-    return next();
-  }
-
-  if (request.method === 'OPTIONS') {
-    return new Response(null, { status: 204, headers: corsHeaders(request) });
-  }
-
-  const response = await next();
-  const headers = new Headers(response.headers);
-  for (const [key, value] of Object.entries(corsHeaders(request))) {
-    headers.set(key, value);
-  }
-  return new Response(response.body, {
-    status: response.status,
-    statusText: response.statusText,
-    headers,
-  });
+  if (origin) headers['Access-Control-Allow-Credentials'] = 'true';
+  return headers;
 };
+
+export const onRequest = defineMiddleware(async (context, next) => {
+  if (!context.url.pathname.startsWith('/api/')) return next();
+  if (context.request.method === 'OPTIONS') {
+    return new Response(null, { status: 204, headers: buildCorsHeaders(context.request) });
+  }
+  const response = await next();
+  for (const [k, v] of Object.entries(buildCorsHeaders(context.request))) {
+    response.headers.set(k, v);
+  }
+  return response;
+});

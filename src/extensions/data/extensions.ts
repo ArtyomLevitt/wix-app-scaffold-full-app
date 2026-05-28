@@ -9,6 +9,38 @@ export const dataExtension = extensions.genericExtension({
       collections: [
         {
           schemaUrl: 'https://www.wix.com/',
+          idSuffix: 'plan-pricing-table-data',
+          displayName: 'Pricing Plans Compare Data',
+          displayField: 'key',
+          fields: [
+            {
+              key: 'key',
+              displayName: 'Key',
+              type: 'TEXT',
+              description: 'Row identifier — e.g. "widget_settings", "usage_counter".',
+            },
+            {
+              key: 'settings',
+              displayName: 'Settings JSON',
+              type: 'OBJECT',
+              objectOptions: {},
+            },
+            {
+              key: 'v',
+              displayName: 'Encoded Value',
+              type: 'TEXT',
+              description: 'Encoded monthly usage counter.',
+            },
+          ],
+          dataPermissions: {
+            itemRead: 'PRIVILEGED',
+            itemInsert: 'PRIVILEGED',
+            itemUpdate: 'PRIVILEGED',
+            itemRemove: 'PRIVILEGED',
+          },
+        },
+        {
+          schemaUrl: 'https://www.wix.com/',
           idSuffix: 'pricing-plans',
           displayName: 'Pricing Plans',
           displayField: 'name',

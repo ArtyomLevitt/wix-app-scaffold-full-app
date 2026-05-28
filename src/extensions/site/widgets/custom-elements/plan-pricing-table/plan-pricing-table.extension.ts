@@ -14,6 +14,11 @@ export default extensions.customElement({
       thumbnailUrl: '{{BASE_URL}}/plan-pricing-table-thumbnail.png',
     },
   ],
+  behaviors: {
+    dashboard: {
+      dashboardPageComponentId: 'dd96bc7c-74b4-4bc0-a9d3-f4578c144b4c',
+    },
+  },
   width: {
     defaultWidth: 900,
     allowStretch: true,

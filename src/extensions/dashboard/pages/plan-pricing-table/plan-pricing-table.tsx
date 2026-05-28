@@ -29,6 +29,7 @@ import { withIntlProvider } from '../../../../intl/withIntlProvider';
 import {
   APP_ID,
   FREE_PLAN_LIMIT,
+  LS_LAST_SAVED,
   LS_ONBOARDING,
   LS_REVIEW,
   REVIEW_URL,
@@ -56,6 +57,8 @@ type PremiumInfo = {
   planStatus: string;
   packageName?: string;
   instanceId?: string;
+  metaSiteId?: string;
+  siteUrl?: string;
 };
 
 type WixSitePlan = { id: string; name: string };
@@ -98,7 +101,18 @@ const DashboardPage: FC = () => {
   const [previewMode, setPreviewMode] = useState<'desktop' | 'mobile'>('desktop');
   const [selectedPlanIndex, setSelectedPlanIndex] = useState(0);
   const [saving, setSaving] = useState(false);
-  const [savedAt, setSavedAt] = useState<number | null>(null);
+  const [lastSavedAt, setLastSavedAt] = useState<number | null>(() => {
+    try {
+      const raw = localStorage.getItem(LS_LAST_SAVED);
+      const n = raw ? parseInt(raw, 10) : NaN;
+      return Number.isFinite(n) && n > 0 ? n : null;
+    } catch {
+      return null;
+    }
+  });
+  const [, setNowTick] = useState(0);
+  const [siteId, setSiteId] = useState<string>('');
+  const [siteUrl, setSiteUrl] = useState<string>('');
   const [celebration, setCelebration] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
 
@@ -112,6 +126,24 @@ const DashboardPage: FC = () => {
 
   const canAddPlan = premium.isPremium || plans.length < FREE_PLAN_LIMIT;
   const highlightedPlan = plans.find((p) => p.isHighlighted);
+  const hasSaved = lastSavedAt !== null;
+
+  useEffect(() => {
+    if (lastSavedAt === null) return;
+    const id = setInterval(() => setNowTick((n) => n + 1), 30_000);
+    return () => clearInterval(id);
+  }, [lastSavedAt]);
+
+  const formatLastSaved = useCallback((ts: number): string => {
+    const d = Math.floor((Date.now() - ts) / 1000);
+    if (d < 10) return 'just now';
+    if (d < 60) return `${d}s ago`;
+    const m = Math.floor(d / 60);
+    if (m < 60) return `${m}m ago`;
+    const h = Math.floor(m / 60);
+    if (h < 24) return `${h}h ago`;
+    return `${Math.floor(h / 24)}d ago`;
+  }, []);
 
   useEffect(() => {
     ensureRatePopupRegistered();
@@ -147,6 +179,8 @@ const DashboardPage: FC = () => {
       };
       const wixList = (await wixPlansRes.json()) as { plans: WixSitePlan[] };
       setPremium(prem);
+      if (prem.metaSiteId) setSiteId(prem.metaSiteId);
+      if (prem.siteUrl) setSiteUrl(prem.siteUrl);
       setPlans((plansData.plans ?? []).map(normalizePlan));
       setSettings(migrateSettings(settingsData.settings));
       setAppPlans(market.plans ?? []);
@@ -187,7 +221,13 @@ const DashboardPage: FC = () => {
       }
       setPlans((plansBody.plans ?? plans).map(normalizePlan));
       setSettings(migrateSettings(settingsBody.settings ?? settings));
-      setSavedAt(Date.now());
+      const now = Date.now();
+      setLastSavedAt(now);
+      try {
+        localStorage.setItem(LS_LAST_SAVED, String(now));
+      } catch {
+        /* ignore */
+      }
       setCelebration(true);
       httpClient.fetchWithAuth('/api/app/track-setup-completed', { method: 'POST' }).catch(() => {});
       triggerReviewOnce();
@@ -680,6 +720,66 @@ const DashboardPage: FC = () => {
           </div>
         </Box>
       </div>
+
+      <Box direction="horizontal" align="right" gap="0px" verticalAlign="middle" marginTop="12px">
+        <Box direction="horizontal" marginRight="12px" verticalAlign="middle" gap="6px">
+          {saving ? (
+            <>
+              <Loader size="tiny" />
+              <Text size="tiny" secondary>{'Saving\u2026'}</Text>
+            </>
+          ) : lastSavedAt ? (
+            <>
+              <Icons.StatusComplete style={{ width: 14, height: 14, color: '#27AE60' }} />
+              <Text size="tiny" secondary>
+                Last saved {formatLastSaved(lastSavedAt)}
+              </Text>
+            </>
+          ) : null}
+        </Box>
+        <Button
+          onClick={handleSave}
+          disabled={saving}
+          prefixIcon={<Icons.Confirm />}
+          style={{ borderTopRightRadius: 0, borderBottomRightRadius: 0 }}
+        >
+          {saving ? 'Saving…' : hasSaved ? 'Update' : 'Save'}
+        </Button>
+        <Button
+          priority="secondary"
+          prefixIcon={<Icons.ExternalLinkSmall />}
+          as="a"
+          href={siteId ? `https://manage.wix.com/editor/${siteId}` : undefined}
+          target="_blank"
+          disabled={!siteId}
+          style={{ borderRadius: 0, borderRight: '1px solid #dfe1e5' }}
+        >
+          View Editor
+        </Button>
+        <Tooltip
+          content={
+            <span>
+              {siteUrl
+                ? 'Open your published site in a new tab.'
+                : 'Publish your site to see the widget live.'}
+            </span>
+          }
+        >
+          <div>
+            <Button
+              priority="secondary"
+              prefixIcon={<Icons.Globe />}
+              as="a"
+              href={siteUrl || undefined}
+              target="_blank"
+              disabled={!siteUrl}
+              style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
+            >
+              View Live Site
+            </Button>
+          </div>
+        </Tooltip>
+      </Box>
     </Box>
   );
 
@@ -900,14 +1000,6 @@ const DashboardPage: FC = () => {
                   <Button as="a" href={upgradeUrl} target="_blank" prefixIcon={<Icons.Premium />}>
                     {t('button.upgrade')}
                   </Button>
-                ) : null}
-                <Button onClick={handleSave} disabled={saving}>
-                  {saving ? t('button.saving') : t('button.save')}
-                </Button>
-                {savedAt ? (
-                  <Text size="tiny" secondary>
-                    {t('manage.saved')}
-                  </Text>
                 ) : null}
               </Box>
             }
