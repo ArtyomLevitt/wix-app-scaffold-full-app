@@ -6,6 +6,11 @@ export default extensions.customElement({
   tagName: 'plan-pricing-table',
   element: './extensions/site/widgets/custom-elements/plan-pricing-table/widget.tsx',
   settings: './extensions/site/widgets/custom-elements/plan-pricing-table/panel.tsx',
+  behaviors: {
+    dashboard: {
+      dashboardPageComponentId: 'b75b92c5-0afb-4b9a-b003-0871a574ce36',
+    },
+  },
   installation: {
     autoAdd: true,
   },
