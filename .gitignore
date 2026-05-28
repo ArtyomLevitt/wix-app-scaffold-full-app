@@ -1,6 +1,7 @@
 node_modules/
 dist/
 .wix/
+.astro/
 .env
 .env.local
 *.log
