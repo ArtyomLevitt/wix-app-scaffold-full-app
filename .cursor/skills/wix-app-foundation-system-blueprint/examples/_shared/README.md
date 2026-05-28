@@ -9,7 +9,7 @@ When scaffolding a new app, copy-adapt from here first. Per-app folders only ove
 | File | Where it goes in a new app | Notes |
 |------|-----------------------------|-------|
 | `rate-popup.ts` | `src/dashboard/_shared/rate-popup.ts` | Shadow-DOM review modal. Replace `<APP_ID>` in `DEFAULT_REVIEW_URL`. |
-| `supabase-client.ts` | `src/backend/_shared/supabase-client.ts` | **Gitignore this file.** Replace URL + key with real values. |
+| `supabase-client.ts` | `src/backend/_shared/supabase-client.ts` (legacy) — or `src/extensions/_shared/` + `src/extensions/backend/_shared/` (Astro) | **Commit this file** (env-based, no secrets). Real `SUPABASE_URL` + `SUPABASE_SERVICE_KEY` live in `.env.local`, which IS gitignored. |
 | `tracking.web.ts` | `src/backend/_shared/tracking.web.ts` | `trackSetupCompleted` web method, called once on first save. |
 | `check-premium.web.ts` | `src/backend/check-premium.web.ts` | Returns `{ isPremium, planStatus, packageName, instanceId, metaSiteId }`. |
 | `app-plans.web.ts` | `src/backend/app-plans.web.ts` | Reads `appPlans.listAppPlansByAppId`. Replace `<APP_ID>`. |
