@@ -15,6 +15,7 @@ import * as Icons from '@wix/wix-ui-icons-common';
 import { httpClient } from '@wix/essentials';
 import { APP_ID, APP_NAME, SUPPORT_EMAIL } from '../../../../_shared/app-config';
 import { DEFAULT_SETTINGS, type AppSettings } from '../../../../_shared/app-settings-types';
+import { ErrorBoundary } from '../../../../_shared/error-boundary';
 import { getApiBase } from '../../../../_shared/widget-api';
 
 const ACCENT = '#6B21A8';
@@ -254,4 +255,10 @@ const Panel: FC = () => {
   );
 };
 
-export default Panel;
+const PanelWithBoundary: FC = () => (
+  <ErrorBoundary surface="panel">
+    <Panel />
+  </ErrorBoundary>
+);
+
+export default PanelWithBoundary;
