@@ -1,15 +1,37 @@
 {
-  "name": "wix-app-scaffold-full-app",
+  "name": "plan-pricing-table",
   "version": "0.1.0",
   "private": true,
-  "description": "Full Wix app with dashboard page, site widget, optional editor settings panel, and backend events.",
+  "description": "Side-by-side pricing plan cards with native Wix Pricing Plans checkout",
   "scripts": {
     "dev": "wix preview",
-    "build": "wix build"
+    "build": "wix build",
+    "typecheck": "tsc --noEmit -p ."
   },
-  "dependencies": {},
+  "dependencies": {
+    "@astrojs/cloudflare": "^12.0.0",
+    "@astrojs/react": "^4.0.0",
+    "react-to-webcomponent": "^2.0.0",
+    "@supabase/supabase-js": "^2.49.0",
+    "@wix/app-management": "^1.0.0",
+    "@wix/business-tools": "^1.0.0",
+    "@wix/data": "^1.0.0",
+    "@wix/design-system": "^1.0.0",
+    "@wix/editor": "^1.0.0",
+    "@wix/essentials": "^1.0.6",
+    "@wix/pricing-plans": "^1.0.0",
+    "@wix/site-pricing-plans": "^1.35.0",
+    "@wix/wix-ui-icons-common": "^3.0.0",
+    "astro": "^5.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-intl": "^6.6.0"
+  },
   "devDependencies": {
-    "@wix/cli": "latest"
+    "@wix/astro": "^2.36.0",
+    "@wix/cli": "latest",
+    "@wix/cli-app": "latest",
+    "typescript": "^5.7.0"
   },
   "engines": {
     "node": ">=20.0.0"
