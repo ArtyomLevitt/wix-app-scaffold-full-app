@@ -9,7 +9,47 @@ export const dataExtension = extensions.genericExtension({
       collections: [
         {
           schemaUrl: 'https://www.wix.com/',
-          idSuffix: 'pricingPlans',
+          idSuffix: 'plan-pricing-table-data',
+          displayName: 'Pricing Plans Compare Data',
+          displayField: 'key',
+          fields: [
+            {
+              key: 'key',
+              displayName: 'Key',
+              type: 'TEXT',
+              description:
+                'Row identifier — e.g. "widget_settings", "usage_counter".',
+            },
+            {
+              key: 'settings',
+              displayName: 'Settings JSON',
+              type: 'OBJECT',
+              objectOptions: {},
+              description: 'Stored widget configuration.',
+            },
+            {
+              key: 'v',
+              displayName: 'Encoded Value',
+              type: 'TEXT',
+              description: 'Encoded monthly usage counter.',
+            },
+            {
+              key: 'notes',
+              displayName: 'Notes',
+              type: 'TEXT',
+              description: 'Free-form notes for admin debugging.',
+            },
+          ],
+          dataPermissions: {
+            itemRead: 'PRIVILEGED',
+            itemInsert: 'PRIVILEGED',
+            itemUpdate: 'PRIVILEGED',
+            itemRemove: 'PRIVILEGED',
+          },
+        },
+        {
+          schemaUrl: 'https://www.wix.com/',
+          idSuffix: 'pricing-plans',
           displayName: 'Pricing Plans',
           displayField: 'name',
           fields: [
@@ -38,7 +78,7 @@ export const dataExtension = extensions.genericExtension({
         },
         {
           schemaUrl: 'https://www.wix.com/',
-          idSuffix: 'appSettings',
+          idSuffix: 'app-settings',
           displayName: 'App Settings',
           displayField: 'key',
           fields: [

@@ -1,9 +1,9 @@
 import { items } from '@wix/data';
 import { auth } from '@wix/essentials';
 import {
+  APP_SETTINGS_DOC_KEY,
   COLLECTION_APP_SETTINGS,
   COLLECTION_PRICING_PLANS,
-  SETTINGS_DOC_KEY,
 } from './collections';
 import {
   applyPremiumGating,
@@ -21,7 +21,7 @@ const elevatedRemove = auth.elevate(items.remove);
 
 export async function loadAppSettings(): Promise<AppSettings> {
   const res = await elevatedQuery(COLLECTION_APP_SETTINGS)
-    .eq('key', SETTINGS_DOC_KEY)
+    .eq('key', APP_SETTINGS_DOC_KEY)
     .limit(1)
     .find();
   const row = res.items[0] as { settings?: Record<string, unknown> } | undefined;
@@ -31,10 +31,10 @@ export async function loadAppSettings(): Promise<AppSettings> {
 
 export async function saveAppSettings(settings: AppSettings): Promise<void> {
   const res = await elevatedQuery(COLLECTION_APP_SETTINGS)
-    .eq('key', SETTINGS_DOC_KEY)
+    .eq('key', APP_SETTINGS_DOC_KEY)
     .limit(1)
     .find();
-  const payload = { key: SETTINGS_DOC_KEY, settings, v: String(settings.v) };
+  const payload = { key: APP_SETTINGS_DOC_KEY, settings, v: String(settings.v) };
   if (res.items.length > 0) {
     await elevatedUpdate(COLLECTION_APP_SETTINGS, {
       ...payload,
