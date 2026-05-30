@@ -256,6 +256,30 @@ const plans = (plansResponse as any).plans;
 
 ---
 
+## 14b. One dashboard page — delete `my-page`, don't rename it
+
+**Wrong:** Keeping `src/extensions/dashboard/pages/my-page/` with `title: 'PDF Viewer (legacy stub)'` while also shipping `pages/pdf-viewer/`.
+
+**Correct:** Delete the entire `my-page/` folder when the real page exists. Only one `extensions.dashboardPage` should register.
+
+**Why:** Wix lists every registered dashboard in the Apps sidebar — two entries confuse merchants.
+
+---
+
+## 14c. Pick the right example app — read INDEX, don’t default to Google Drive
+
+**Wrong:** Copying the entire Manage tab from `share-google-drive-content` for every iframe widget, even when the spec requires a **sticky two-column Live Preview** (PDF viewer, calendar, theme/zoom toggles).
+
+**Correct:** Read `examples/INDEX.md` + 1–2 `SUMMARY.md` files. Mix patterns:
+- **Dashboard Live Preview (form left, preview right)** → `~/google-calendar/` or `~/age-verification/` layout
+- **URL → embed parser, watermark, Connection StatCard** → `share-google-drive-content/` (sections only)
+- **Paste API key / OAuth** → `paypal-payment-button/`
+- **Password gate** → `password-protected/` only for gate apps
+
+App Factory injects a per-project routing block — follow it.
+
+---
+
 ## 15. App Name Renames — Canonicalize, don't write raw `instance.appName`
 
 **Files:** `src/extensions/backend/events/app-installed/app-installed.ts` and any other handler that writes to `app_installations` or `app_reviews`.

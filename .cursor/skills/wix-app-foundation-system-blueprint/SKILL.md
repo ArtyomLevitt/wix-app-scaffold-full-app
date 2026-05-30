@@ -258,7 +258,7 @@ Deep-dive references — loaded by the implementing sub-agent on demand, not all
 
 | Folder | Contents |
 |--------|----------|
-| [examples/INDEX.md](examples/INDEX.md) | **READ FIRST** — catalog of 7 deep-dive apps + 6 index-only apps + decision tree for picking the closest match |
+| [examples/INDEX.md](examples/INDEX.md) | **READ FIRST** — catalog of 7 deep-dive apps + decision tree; pick **layout** (calendar sticky preview vs Drive tester vs PayPal connection) before copying code |
 | [examples/_shared/](examples/_shared/) | Canonical PRPL files every app copies verbatim: `rate-popup.ts`, `check-premium.web.ts`, `app-plans.web.ts`, `tracking.web.ts`, `supabase-client.ts`, the 3 backend events, **`StatCard.tsx`, `MoreAppsCard.tsx`** |
 | [examples/frequently-bought-together/](examples/frequently-bought-together/) | Multi-slot Site Plugin (checkout + side cart), per-plan rule limits, settings polling. Legacy CLI. |
 | [examples/password-protected/](examples/password-protected/) | Embedded Script (HEAD), `{{placeholders}}`, client-side SHA-256, HTTP API for site widgets. Legacy CLI. |

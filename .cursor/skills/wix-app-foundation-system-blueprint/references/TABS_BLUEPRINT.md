@@ -74,7 +74,7 @@ Order of cards within the Manage tab:
    <WixDesignSystemProvider features={{ newColorsBranding: true }}>
      <ErrorBoundary>
        <Page height="100vh">{/* ← REQUIRED #1: 100vh makes Page.Content the scrolling ancestor */}
-         <Page.Header title="App Name" subtitle="…" />
+         <Page.Header subtitle="…" actionsBar={…} />
          <Page.Content>
            {/* REQUIRED #2: Tabs OUTSIDE the Layout, in a Box with marginBottom, type="compact". */}
            <Box marginBottom="24px">

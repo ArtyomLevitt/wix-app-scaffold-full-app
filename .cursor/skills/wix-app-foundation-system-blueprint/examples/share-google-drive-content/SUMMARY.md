@@ -50,7 +50,7 @@ const ONBOARDING_KEY   = 'gdrive_onboarding_done';
 
 ## When to use as reference
 
-- Any custom-element widget app (iframe embed, video player, calendar, map, social feed)
-- Apps where the editor settings panel is the primary configuration UI
-- Apps with a watermark / branding element on the free tier
+- **Copy from here:** URL→embed parser (`parseDriveUrl` / `buildEmbedUrl`), watermark on free tier, Connection StatCards, `widget.getProp` / `setProp` panel, premium prop mirroring.
+- **Do NOT copy the whole Manage tab** when the spec needs a **sticky two-column Live Preview** (form left, preview right that updates on every toggle) — that layout lives in `~/google-calendar/` (read its dashboard + `widget-settings-types.ts`).
+- Best fit when the **editor panel** is the main config surface and the dashboard is mostly a “test a link” tester (legacy Drive app pattern).
 - Apps that auto-detect content type from a URL (parsers + dispatch tables)

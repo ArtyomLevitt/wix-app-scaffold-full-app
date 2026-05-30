@@ -166,7 +166,11 @@ Is your app primarily a:
 │   └── …with ONE slot, simple display? → frequently-bought-together (just one of the plugins)
 │
 ├── Site widget that's a DRAGGABLE element (iframe / video / map / calendar)?
-│   → share-google-drive-content
+│   ├── Spec asks for dashboard **Live Preview** (form + preview update together)?
+│   │   → **google-calendar** (sticky 7/5 Manage layout) + share-google-drive-content (URL parser / watermark only)
+│   ├── Spec says config lives mainly in the **editor panel** (light dashboard “test link”)?
+│   │   → share-google-drive-content (primary)
+│   └── Unsure? Read both SUMMARY.md files (~80 lines each) and pick by spec wording — never copy one app wholesale.
 │
 ├── Site widget that integrates a THIRD-PARTY SDK loaded at runtime (Stripe, Klarna,
 │   Plaid, Square, Mapbox, Calendly, …) AND/OR stores provider credentials
