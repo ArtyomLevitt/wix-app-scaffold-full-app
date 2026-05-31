@@ -2,11 +2,9 @@
   "page.title": "PDF Viewer & Flipbook",
   "page.subtitle": "Embed PDF documents and flipbooks on your Wix site with a beautiful, customizable viewer.",
   "page.checkingPlan": "Checking plan...",
-
   "tab.manage": "Manage",
   "tab.planSettings": "Plan & Settings",
   "tab.howToUse": "How to Use",
-
   "badge.premium": "Premium",
   "badge.free": "Free",
   "badge.connected": "Connected",
@@ -14,7 +12,6 @@
   "badge.reachable": "Reachable",
   "badge.unreachable": "Unreachable",
   "badge.validating": "Checking...",
-
   "button.upgrade": "Upgrade",
   "button.upgradeToPremium": "Upgrade to Premium",
   "button.viewPlans": "View Plans",
@@ -31,7 +28,6 @@
   "button.viewInEditor": "View in Editor",
   "button.viewLiveSite": "View Live Site",
   "button.dismiss": "Dismiss",
-
   "onboarding.welcome": "Welcome to PDF Viewer & Flipbook",
   "onboarding.welcomeDesc": "Display PDF catalogs, brochures, menus, and flipbooks directly on your site — no downloads required for visitors.",
   "onboarding.howItWorks": "How It Works",
@@ -56,7 +52,6 @@
   "onboarding.allSet": "You're All Set!",
   "onboarding.allSetDesc": "Paste a PDF URL in the Manage tab to configure your viewer and see a live preview.",
   "onboarding.configureNow": "Configure Your PDF",
-
   "stats.connection": "Connection",
   "stats.connectionTooltip": "Whether your PDF URL is valid and reachable",
   "stats.connectionNotSet": "No PDF URL",
@@ -74,14 +69,12 @@
   "stats.upgradeTooltip": "Remove watermarks and unlock full PDF access",
   "stats.allUnlocked": "All Unlocked",
   "stats.youHavePremium": "Premium active",
-
   "upsell.title": "Unlock the Full PDF Experience",
   "upsell.desc": "Upgrade to remove the watermark, view all pages, enable downloads, and customize theme and colors.",
   "upsell.perkNoWatermark": "No watermark on your viewer",
   "upsell.perkAllPages": "View unlimited pages",
   "upsell.perkDownload": "Allow visitor downloads",
   "upsell.perkTheme": "Dark theme and custom accent color",
-
   "settings.title": "PDF Viewer Settings",
   "settings.subtitle": "Configure how your PDF appears on the live site. Changes update the preview instantly.",
   "settings.pdfUrl": "PDF URL",
@@ -112,23 +105,19 @@
   "settings.pageLayoutSingle": "Single page (flipbook)",
   "settings.pageLayoutContinuous": "Continuous scroll",
   "settings.premiumLock": "Premium feature — upgrade to unlock",
-
   "preview.title": "Live Preview",
   "preview.subtitle": "Updates as you change settings.",
   "preview.desktop": "Desktop",
   "preview.mobile": "Mobile",
   "preview.emptyTitle": "No PDF loaded yet",
   "preview.emptyDesc": "Enter a PDF URL on the left and click Test / Load to see your preview here.",
-
   "toast.saved": "Settings saved successfully",
   "toast.saveFailed": "Save failed — please try again",
   "toast.testSuccess": "PDF URL validated successfully",
   "toast.testFailed": "Could not validate PDF URL",
   "toast.invalidUrl": "Fix the PDF URL before saving",
-
   "save.saving": "Saving…",
   "save.lastSaved": "Last saved {time}",
-
   "pricing.title": "Plans & Pricing",
   "pricing.subtitle": "Choose the plan that fits your site.",
   "pricing.tooltip": "Plans are billed monthly or yearly. Upgrade anytime from this dashboard.",
@@ -153,7 +142,6 @@
   "pricing.featureTheme": "Dark theme & accent color",
   "pricing.featureSupport": "Priority support",
   "pricing.loading": "Loading plans...",
-
   "howTo.title": "How to Use",
   "howTo.subtitle": "Get your PDF live on your site in a few minutes.",
   "faq.q1": "What PDF URLs are supported?",
@@ -168,11 +156,9 @@
   "faq.a5": "The Wix editor sandbox may block PDF rendering. Publish your site or use the dashboard Live Preview to verify your URL. The live site works normally.",
   "faq.q6": "How do I remove the watermark?",
   "faq.a6": "Upgrade to Premium from the Plan & Settings tab. The Powered by PURPLE watermark is removed automatically on premium plans.",
-
   "help.title": "Need Help?",
   "help.description": "Our team replies within 24h — Premium gets VIP priority.",
   "help.email": "apps-support@prpl.io",
-
   "moreApps.title": "More apps by us",
   "moreApps.frequentlyBoughtTogether": "Frequently Bought Together",
   "moreApps.frequentlyBoughtTogetherDesc": "Show Frequently Bought Together in the Side Cart",
@@ -184,7 +170,6 @@
   "moreApps.customAdditionalFeesDesc": "Add custom fees to your store checkout",
   "moreApps.exploreMore": "Explore more apps",
   "moreApps.poweredBy": "Powered by",
-
   "panel.title": "PDF Viewer",
   "panel.connection": "CONNECTION",
   "panel.pdfUrl": "PDF URL",
@@ -204,7 +189,6 @@
   "panel.tipTitle": "Configure in the Dashboard",
   "panel.tipDesc": "Open the app Dashboard to test your PDF URL and customize the full viewer experience.",
   "panel.needHelp": "Need Help?",
-
   "widget.placeholderTitle": "PDF Viewer & Flipbook",
   "widget.placeholderSubtitle": "Add a PDF URL in Settings or the Dashboard to display your document here.",
   "widget.invalidUrl": "Invalid PDF URL. Please provide a valid link to a PDF file.",
@@ -218,8 +202,15 @@
   "widget.download": "Download",
   "widget.pageOf": "Page {current} of {total}",
   "widget.poweredBy": "Powered by",
-  "widget.pageLimitNotice": "Showing first {max} pages — upgrade for full access",
-
+  "widget.pageLimitNotice": "Showing first {limit} pages — upgrade for full access",
   "ratePopup.title": "How are you liking our app?",
-  "ratePopup.ariaLabel": "Review"
+  "ratePopup.ariaLabel": "Review",
+  "panel.premiumRequired": "Premium plan required",
+  "panel.upgrade": "Upgrade",
+  "panel.upgradeHint": "Go Premium for downloads and full customization",
+  "panel.footerHint": "Open the app Dashboard for the full configuration experience.",
+  "panel.fitWidth": "Fit width",
+  "panel.fitPage": "Fit page",
+  "panel.themeLight": "Light",
+  "panel.themeDark": "Dark"
 }
