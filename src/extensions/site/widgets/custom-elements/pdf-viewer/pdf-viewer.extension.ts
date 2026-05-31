@@ -16,6 +16,11 @@ export default extensions.customElement({
   height: {
     defaultHeight: 600,
   },
+  behaviors: {
+    dashboard: {
+      dashboardPageComponentId: 'baf2dd75-bd1f-458d-b7ab-fa0ef6a9879a',
+    },
+  },
   presets: [
     {
       id: '42d6d241-4baa-4d89-b856-d2d5bb8b9b27',

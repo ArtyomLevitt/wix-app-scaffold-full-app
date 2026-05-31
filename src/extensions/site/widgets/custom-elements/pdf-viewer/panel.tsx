@@ -1,28 +1,32 @@
-import React, { type FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { widget } from '@wix/editor';
+import React, { type FC, useEffect, useState } from 'react';
 import {
   Badge,
   Box,
+  Button,
   Divider,
-  Dropdown,
-  FormField,
-  Input,
   Loader,
   SidePanel,
-  Slider,
   Text,
   TextButton,
-  ToggleSwitch,
   WixDesignSystemProvider,
 } from '@wix/design-system';
-import * as Icons from '@wix/wix-ui-icons-common';
 import '@wix/design-system/styles.global.css';
+import * as Icons from '@wix/wix-ui-icons-common';
 import { httpClient } from '@wix/essentials';
 import { useIntl } from 'react-intl';
-import { APP_ID } from '../../../../_shared/app-config';
-import { WidgetErrorBoundary } from '../../../../_shared/error-boundary';
-import { validatePdfUrl } from '../../../../_shared/pdf-url';
+import {
+  APP_ID,
+  APP_NAME,
+  SUPPORT_EMAIL,
+} from '../../../../_shared/app-config';
+import { ErrorBoundary } from '../../../../_shared/error-boundary';
+import {
+  DEFAULT_SETTINGS,
+  type WidgetSettings,
+} from '../../../../_shared/widget-settings-types';
 import { withIntlProvider } from '../../../../../intl/withIntlProvider';
+
+const ACCENT = '#3B6AEA';
 
 const getApiBase = (): string => {
   try {
@@ -32,211 +36,224 @@ const getApiBase = (): string => {
   }
 };
 
-const PanelInner: FC = () => {
+interface PremiumInfo {
+  isPremium: boolean;
+  packageName?: string;
+  instanceId?: string;
+  metaSiteId?: string;
+}
+
+const SkeletonLine: FC<{ width?: string | number; height?: number }> = ({
+  width = '100%',
+  height = 12,
+}) => (
+  <div
+    style={{
+      width: typeof width === 'number' ? `${width}px` : width,
+      height,
+      borderRadius: 4,
+      background: 'linear-gradient(90deg, #ECEEF1 0%, #F7F8FA 50%, #ECEEF1 100%)',
+      backgroundSize: '200% 100%',
+      animation: 'app-panel-shimmer 1.4s ease-in-out infinite',
+    }}
+  />
+);
+
+const SummaryRow: FC<{ label: string; value: string }> = ({ label, value }) => (
+  <SidePanel.Field>
+    <Box direction="horizontal" gap="8px" verticalAlign="middle">
+      <Text size="tiny" secondary weight="bold">
+        {label}
+      </Text>
+      <Text size="tiny">{value}</Text>
+    </Box>
+  </SidePanel.Field>
+);
+
+const Panel: FC = () => {
   const intl = useIntl();
   const t = (id: string) => intl.formatMessage({ id });
 
-  const [pdfUrl, setPdfUrl] = useState('');
-  const [defaultZoom, setDefaultZoom] = useState(100);
-  const [fitMode, setFitMode] = useState('fit-width');
-  const [showToolbar, setShowToolbar] = useState(true);
-  const [allowDownload, setAllowDownload] = useState(false);
-  const [theme, setTheme] = useState('light');
-  const [accentColor, setAccentColor] = useState('#6B21A8');
-  const [viewerHeight, setViewerHeight] = useState(600);
-  const [pageLayout, setPageLayout] = useState('continuous');
-
+  const [settings, setSettings] = useState<WidgetSettings>(DEFAULT_SETTINGS);
+  const [loading, setLoading] = useState(true);
   const [isPremium, setIsPremium] = useState(false);
-  const [planLoading, setPlanLoading] = useState(true);
-  const [instanceId, setInstanceId] = useState<string | undefined>();
-
-  const upgradeUrl = useMemo(
-    () =>
-      instanceId
-        ? `https://www.wix.com/apps/upgrade/${APP_ID}?appInstanceId=${instanceId}`
-        : `https://www.wix.com/apps/upgrade/${APP_ID}`,
-    [instanceId],
-  );
-
-  const urlTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [packageName, setPackageName] = useState<string | undefined>();
+  const [metaSiteId, setMetaSiteId] = useState<string | null>(null);
+  const [instanceId, setInstanceId] = useState<string | null>(null);
 
   useEffect(() => {
-    async function init() {
+    let cancelled = false;
+    (async () => {
       try {
         const base = getApiBase();
         const [settingsRes, premiumRes] = await Promise.all([
           httpClient.fetchWithAuth(`${base}/api/widget/settings`),
           httpClient.fetchWithAuth(`${base}/api/app/check-premium`),
         ]);
+        if (cancelled) return;
+
         if (settingsRes.ok) {
-          const data = await settingsRes.json();
-          if (data.pdfUrl) setPdfUrl(data.pdfUrl);
-          if (data.defaultZoom) setDefaultZoom(data.defaultZoom);
-          if (data.fitMode) setFitMode(data.fitMode);
-          setShowToolbar(data.showToolbar !== false);
-          setAllowDownload(!!data.allowDownload);
-          if (data.theme) setTheme(data.theme);
-          if (data.accentColor) setAccentColor(data.accentColor);
-          if (data.viewerHeight) setViewerHeight(data.viewerHeight);
-          if (data.pageLayout) setPageLayout(data.pageLayout);
-          setIsPremium(!!data.isPremium);
+          const w = (await settingsRes.json()) as WidgetSettings;
+          setSettings({ ...DEFAULT_SETTINGS, ...w });
         }
+
         if (premiumRes.ok) {
-          const premium = await premiumRes.json();
-          setIsPremium(!!premium.isPremium);
-          widget.setProp('ispremium', String(!!premium.isPremium));
-          if (premium.instanceId) setInstanceId(premium.instanceId);
+          const p = (await premiumRes.json()) as PremiumInfo;
+          setIsPremium(!!p.isPremium);
+          setPackageName(p.packageName);
+          setMetaSiteId(p.metaSiteId ?? null);
+          setInstanceId(p.instanceId ?? null);
         }
-      } catch (err) {
-        console.warn('[panel] init failed:', err);
+      } catch (e) {
+        console.error('[panel] load failed', e);
       } finally {
-        setPlanLoading(false);
+        if (!cancelled) setLoading(false);
       }
-    }
-    init();
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  const pushProp = useCallback((name: string, value: string) => {
-    widget.setProp(name, value).catch(() => undefined);
-  }, []);
+  const siteOrInstance = metaSiteId || instanceId;
+  const dashboardUrl = siteOrInstance
+    ? `https://manage.wix.com/dashboard/${siteOrInstance}/app/${APP_ID}`
+    : null;
 
-  const handleUrlChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const value = e.target.value;
-      setPdfUrl(value);
-      if (urlTimerRef.current) clearTimeout(urlTimerRef.current);
-      urlTimerRef.current = setTimeout(() => {
-        const v = validatePdfUrl(value);
-        pushProp('pdfurl', v.ok ? v.normalized : value.trim());
-      }, 800);
-    },
-    [pushProp],
-  );
-
-  if (planLoading) {
+  if (loading) {
     return (
-      <Box align="center" verticalAlign="middle" height="200px">
-        <Loader size="small" />
-      </Box>
+      <WixDesignSystemProvider>
+        <style>{`@keyframes app-panel-shimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }`}</style>
+        <SidePanel width="300px" height="100vh">
+          <SidePanel.Header title={APP_NAME} suffix={<Loader size="tiny" />} />
+          <SidePanel.Content noPadding stretchVertically>
+            <Box direction="vertical" gap="SP0">
+              <SidePanel.Field>
+                <div
+                  style={{
+                    height: 32,
+                    borderRadius: 6,
+                    background:
+                      'linear-gradient(90deg, #ECEEF1 0%, #F7F8FA 50%, #ECEEF1 100%)',
+                    backgroundSize: '200% 100%',
+                    animation: 'app-panel-shimmer 1.4s ease-in-out infinite',
+                  }}
+                />
+              </SidePanel.Field>
+              <SidePanel.Field>
+                <Box direction="horizontal" gap="8px" verticalAlign="middle">
+                  <SkeletonLine width={16} height={16} />
+                  <SkeletonLine width={90} height={10} />
+                </Box>
+              </SidePanel.Field>
+              <SidePanel.Field>
+                <Box
+                  direction="vertical"
+                  gap="8px"
+                  padding="10px 12px"
+                  borderRadius="8px"
+                  backgroundColor="#F7F8FA"
+                  border="1px solid #E8E8E8"
+                >
+                  <SkeletonLine width="80%" />
+                  <SkeletonLine width="60%" />
+                  <SkeletonLine width="70%" />
+                  <SkeletonLine width="50%" />
+                </Box>
+              </SidePanel.Field>
+            </Box>
+          </SidePanel.Content>
+        </SidePanel>
+      </WixDesignSystemProvider>
     );
   }
 
+  const pdfSummary = settings.pdfUrl?.trim()
+    ? settings.pdfUrl.length > 42
+      ? `${settings.pdfUrl.slice(0, 39)}…`
+      : settings.pdfUrl
+    : t('panel.notConfigured');
+
   return (
-    <WixDesignSystemProvider features={{ newColorsBranding: true }}>
-      <SidePanel width="300px">
-        <SidePanel.Header title={t('panel.title')} />
-        <SidePanel.Content>
-          <Box direction="vertical" gap="SP4">
-            <FormField label={t('panel.pdfUrl')}>
-              <Input value={pdfUrl} onChange={handleUrlChange} placeholder="https://..." />
-            </FormField>
-
-            <FormField label={t('panel.defaultZoom')}>
-              <Slider
-                min={50}
-                max={200}
-                step={10}
-                value={defaultZoom}
-                onChange={(val) => {
-                  const n = Array.isArray(val) ? val[0] : val;
-                  setDefaultZoom(n);
-                  pushProp('defaultzoom', String(n));
-                }}
-              />
-            </FormField>
-
-            <FormField label={t('panel.fitMode')}>
-              <Dropdown
-                options={[
-                  { id: 'fit-width', value: t('panel.fitWidth') },
-                  { id: 'fit-page', value: t('panel.fitPage') },
-                ]}
-                selectedId={fitMode}
-                onSelect={(opt) => {
-                  const id = String(opt.id);
-                  setFitMode(id);
-                  pushProp('fitmode', id);
-                }}
-              />
-            </FormField>
-
-            <FormField label={t('panel.showToolbar')}>
-              <ToggleSwitch
-                checked={showToolbar}
-                onChange={() => {
-                  const next = !showToolbar;
-                  setShowToolbar(next);
-                  pushProp('showtoolbar', String(next));
-                }}
-              />
-            </FormField>
-
-            <FormField
-              label={t('panel.allowDownload')}
-              infoContent={!isPremium ? t('panel.premiumRequired') : undefined}
+    <WixDesignSystemProvider>
+      <SidePanel width="300px" height="100vh">
+        <SidePanel.Header
+          title={APP_NAME}
+          suffix={
+            <Badge
+              size="tiny"
+              skin={isPremium ? 'premium' : 'neutral'}
+              prefixIcon={isPremium ? <Icons.PremiumFilled /> : undefined}
             >
-              <ToggleSwitch
-                checked={allowDownload && isPremium}
-                disabled={!isPremium}
-                onChange={() => {
-                  if (!isPremium) return;
-                  const next = !allowDownload;
-                  setAllowDownload(next);
-                  pushProp('allowdownload', String(next));
-                }}
-              />
-            </FormField>
-
-            <FormField
-              label={t('panel.theme')}
-              infoContent={!isPremium ? t('panel.premiumRequired') : undefined}
-            >
-              <Dropdown
-                disabled={!isPremium}
-                options={[
-                  { id: 'light', value: t('panel.themeLight') },
-                  { id: 'dark', value: t('panel.themeDark') },
-                ]}
-                selectedId={theme}
-                onSelect={(opt) => {
-                  if (!isPremium) return;
-                  const id = String(opt.id);
-                  setTheme(id);
-                  pushProp('theme', id);
-                }}
-              />
-            </FormField>
-
-            <FormField label={t('panel.viewerHeight')}>
-              <Slider
-                min={320}
-                max={900}
-                step={20}
-                value={viewerHeight}
-                onChange={(val) => {
-                  const n = Array.isArray(val) ? val[0] : val;
-                  setViewerHeight(n);
-                  pushProp('viewerheight', String(n));
-                }}
-              />
-            </FormField>
-
-            {!isPremium && (
-              <Box direction="vertical" gap="SP2">
-                <Badge skin="premium">{t('panel.upgradeHint')}</Badge>
-                <TextButton as="a" href={upgradeUrl} target="_blank">
-                  {t('panel.upgrade')}
-                </TextButton>
-              </Box>
+              {isPremium ? packageName || 'Premium' : 'Free'}
+            </Badge>
+          }
+        />
+        <SidePanel.Content noPadding stretchVertically>
+          <Box direction="vertical" gap="SP0">
+            {dashboardUrl && (
+              <SidePanel.Field>
+                <Button
+                  size="small"
+                  priority="primary"
+                  prefixIcon={<Icons.ExternalLinkSmall />}
+                  onClick={() => window.open(dashboardUrl, '_blank')}
+                  fullWidth
+                >
+                  {t('panel.manageInDashboard')}
+                </Button>
+              </SidePanel.Field>
             )}
+
+            <SummaryRow label={t('panel.pdfUrl')} value={pdfSummary} />
+            <SummaryRow label={t('panel.defaultZoom')} value={`${settings.defaultZoom}%`} />
+            <SummaryRow label={t('panel.fitMode')} value={settings.fitMode} />
+            <SummaryRow
+              label={t('panel.showToolbar')}
+              value={settings.showToolbar ? t('panel.on') : t('panel.off')}
+            />
+            <SummaryRow
+              label={t('panel.allowDownload')}
+              value={settings.allowDownload ? t('panel.on') : t('panel.off')}
+            />
+            <SummaryRow label={t('panel.theme')} value={settings.theme} />
+            <SummaryRow label={t('panel.viewerHeight')} value={`${settings.viewerHeight}px`} />
+
+            <SidePanel.Field>
+              <Box
+                direction="vertical"
+                gap="SP2"
+                padding="10px 12px"
+                borderRadius="8px"
+                backgroundColor="#F7F8FA"
+                border="1px solid #E8E8E8"
+              >
+                <Box direction="horizontal" gap="6px" verticalAlign="middle">
+                  <Icons.Hint style={{ color: ACCENT }} />
+                  <Text size="tiny" weight="bold">
+                    {t('panel.tipTitle')}
+                  </Text>
+                </Box>
+                <Text size="tiny" secondary>
+                  {t('panel.tipDesc')}
+                </Text>
+              </Box>
+            </SidePanel.Field>
           </Box>
         </SidePanel.Content>
         <SidePanel.Footer>
           <Divider />
-          <Box padding="SP3">
-            <Text size="tiny" secondary>
-              {t('panel.footerHint')}
+          <Box padding="SP3" direction="vertical" gap="SP1">
+            <Text size="tiny" weight="bold">
+              {t('panel.needHelp')}
             </Text>
+            <TextButton
+              as="a"
+              href={`mailto:${SUPPORT_EMAIL}`}
+              prefixIcon={<Icons.Email />}
+            >
+              {SUPPORT_EMAIL}
+            </TextButton>
           </Box>
         </SidePanel.Footer>
       </SidePanel>
@@ -244,10 +261,10 @@ const PanelInner: FC = () => {
   );
 };
 
-const Panel: FC = () => (
-  <WidgetErrorBoundary surface="panel">
-    <PanelInner />
-  </WidgetErrorBoundary>
+const PanelWithBoundary: FC = () => (
+  <ErrorBoundary surface="panel">
+    <Panel />
+  </ErrorBoundary>
 );
 
-export default withIntlProvider(Panel);
+export default withIntlProvider(PanelWithBoundary);

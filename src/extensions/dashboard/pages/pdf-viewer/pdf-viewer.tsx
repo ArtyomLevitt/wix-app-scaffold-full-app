@@ -38,6 +38,7 @@ import {
   APP_ID,
   APP_SLUG,
   FREE_PAGE_LIMIT,
+  LS_LAST_SAVED,
   LS_ONBOARDING,
   LS_REVIEW,
   REVIEW_URL,
@@ -179,6 +180,18 @@ const DashboardPage: FC = () => {
   const [isPremium, setIsPremium] = useState(false);
   const [currentPlanName, setCurrentPlanName] = useState('free');
   const [instanceId, setInstanceId] = useState<string | undefined>();
+  const [siteId, setSiteId] = useState<string>('');
+  const [siteUrl, setSiteUrl] = useState<string>('');
+  const [lastSavedAt, setLastSavedAt] = useState<number | null>(() => {
+    try {
+      const raw = localStorage.getItem(LS_LAST_SAVED);
+      const n = raw ? parseInt(raw, 10) : NaN;
+      return Number.isFinite(n) && n > 0 ? n : null;
+    } catch {
+      return null;
+    }
+  });
+  const [, setNowTick] = useState(0);
 
   const [settingsLoading, setSettingsLoading] = useState(true);
   const [settings, setSettings] = useState<WidgetSettings>(DEFAULT_SETTINGS);
@@ -210,6 +223,23 @@ const DashboardPage: FC = () => {
       }
     }
     setOnboardingDismissedRaw(val);
+  }, []);
+
+  useEffect(() => {
+    if (lastSavedAt === null) return;
+    const id = setInterval(() => setNowTick((n) => n + 1), 30_000);
+    return () => clearInterval(id);
+  }, [lastSavedAt]);
+
+  const formatLastSaved = useCallback((ts: number): string => {
+    const d = Math.floor((Date.now() - ts) / 1000);
+    if (d < 10) return 'just now';
+    if (d < 60) return `${d}s ago`;
+    const m = Math.floor(d / 60);
+    if (m < 60) return `${m}m ago`;
+    const h = Math.floor(m / 60);
+    if (h < 24) return `${h}h ago`;
+    return `${Math.floor(h / 24)}d ago`;
   }, []);
 
   const upgradeUrl = useMemo(
@@ -252,6 +282,8 @@ const DashboardPage: FC = () => {
         setIsPremium(data.isPremium);
         if (data.packageName) setCurrentPlanName(data.packageName);
         if (data.instanceId) setInstanceId(data.instanceId);
+        if (data.metaSiteId) setSiteId(data.metaSiteId);
+        if (data.siteUrl) setSiteUrl(data.siteUrl);
       } catch {
         if (!cancelled) {
           setIsPremium(false);
@@ -391,6 +423,14 @@ const DashboardPage: FC = () => {
       setSettings(data.settings);
       setHasSavedOnce(true);
       if (typeof data.isPremium === 'boolean') setIsPremium(data.isPremium);
+
+      const now = Date.now();
+      setLastSavedAt(now);
+      try {
+        localStorage.setItem(LS_LAST_SAVED, String(now));
+      } catch {
+        /* ignore */
+      }
 
       dashboard.showToast({ message: t('toast.saved'), type: 'success' });
 
@@ -887,14 +927,54 @@ const DashboardPage: FC = () => {
                   </SegmentedToggle>
                 </FormField>
 
-                <Box direction="horizontal" align="right" gap="SP2">
+                <Box direction="horizontal" align="right" gap="0px" verticalAlign="middle" marginTop="12px">
+                  <Box direction="horizontal" marginRight="12px" verticalAlign="middle" gap="6px">
+                    {saving ? (
+                      <>
+                        <Loader size="tiny" />
+                        <Text size="tiny" secondary>{'Saving\u2026'}</Text>
+                      </>
+                    ) : lastSavedAt ? (
+                      <>
+                        <Icons.StatusComplete style={{ width: 14, height: 14, color: '#27AE60' }} />
+                        <Text size="tiny" secondary>Last saved {formatLastSaved(lastSavedAt)}</Text>
+                      </>
+                    ) : null}
+                  </Box>
                   <Button
                     onClick={handleSave}
                     disabled={saving}
                     prefixIcon={<Icons.Confirm />}
+                    style={{ borderTopRightRadius: 0, borderBottomRightRadius: 0 }}
                   >
-                    {saving ? t('save.saving') : hasSavedOnce ? t('button.update') : t('button.save')}
+                    {saving ? 'Saving…' : hasSavedOnce ? t('button.update') : t('button.save')}
                   </Button>
+                  <Button
+                    priority="secondary"
+                    prefixIcon={<Icons.ExternalLinkSmall />}
+                    as="a"
+                    href={siteId ? `https://manage.wix.com/editor/${siteId}` : undefined}
+                    target="_blank"
+                    disabled={!siteId}
+                    style={{ borderRadius: 0, borderRight: '1px solid #dfe1e5' }}
+                  >
+                    View Editor
+                  </Button>
+                  <Tooltip content={<span>{siteUrl ? 'Open your published site in a new tab.' : 'Publish your site to see the widget live.'}</span>}>
+                    <div>
+                      <Button
+                        priority="secondary"
+                        prefixIcon={<Icons.Globe />}
+                        as="a"
+                        href={siteUrl || undefined}
+                        target="_blank"
+                        disabled={!siteUrl}
+                        style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
+                      >
+                        View Live Site
+                      </Button>
+                    </div>
+                  </Tooltip>
                 </Box>
               </Box>
             </Card.Content>

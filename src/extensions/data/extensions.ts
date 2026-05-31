@@ -10,20 +10,26 @@ export const dataExtension = extensions.genericExtension({
         {
           schemaUrl: 'https://www.wix.com/',
           idSuffix: 'pdf-viewer-data',
-          displayName: 'PDF Viewer Data',
+          displayName: 'PDF Viewer & Flipbook Data',
           displayField: 'key',
           fields: [
             {
               key: 'key',
               displayName: 'Key',
               type: 'TEXT',
-              description: 'Row identifier (e.g. viewer_settings).',
+              description: 'Row identifier — e.g. "widget_settings", "usage_counter".',
             },
             {
-              key: 'settingsJson',
+              key: 'settings',
               displayName: 'Settings JSON',
+              type: 'OBJECT',
+              objectOptions: {},
+            },
+            {
+              key: 'v',
+              displayName: 'Encoded Value',
               type: 'TEXT',
-              description: 'Serialized widget settings.',
+              description: 'Encoded monthly usage counter.',
             },
           ],
           dataPermissions: {

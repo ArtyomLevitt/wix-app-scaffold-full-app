@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import reactToWebComponent from 'react-to-webcomponent';
 import { IntlProvider, useIntl } from 'react-intl';
 import { httpClient } from '@wix/essentials';
-import { WidgetErrorBoundary } from '../../../../_shared/error-boundary';
+import { ErrorBoundary } from '../../../../_shared/error-boundary';
 import { PdfViewerCore, detectSandboxedFrame } from '../../../../_shared/pdf-viewer-core';
 import type { PublicWidgetSettings } from '../../../../_shared/widget-settings-types';
 import { loadMessages, getLocaleSafe } from '../../../../../intl/load-messages';
@@ -160,13 +160,17 @@ const LocalizedWidget: FC = () => {
 
   return (
     <IntlProvider messages={messages} locale={locale} defaultLocale="en">
-      <WidgetErrorBoundary surface="widget">
-        <WidgetInner />
-      </WidgetErrorBoundary>
+      <WidgetInner />
     </IntlProvider>
   );
 };
 
-const PdfViewerElement = reactToWebComponent(LocalizedWidget, React, ReactDOM as typeof ReactDOM);
+const BoundedWidget: FC = () => (
+  <ErrorBoundary surface="widget">
+    <LocalizedWidget />
+  </ErrorBoundary>
+);
+
+const PdfViewerElement = reactToWebComponent(BoundedWidget, React, ReactDOM as typeof ReactDOM);
 
 export default PdfViewerElement;

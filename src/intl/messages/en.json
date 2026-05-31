@@ -212,5 +212,9 @@
   "panel.fitWidth": "Fit width",
   "panel.fitPage": "Fit page",
   "panel.themeLight": "Light",
-  "panel.themeDark": "Dark"
+  "panel.themeDark": "Dark",
+  "panel.manageInDashboard": "Manage in dashboard",
+  "panel.notConfigured": "Not configured",
+  "panel.on": "On",
+  "panel.off": "Off"
 }

@@ -1,4 +1,3 @@
-import { app } from '@wix/astro/builders';
 import { dataExtension } from './extensions/data/extensions.ts';
 import pdfViewerPage from './extensions/dashboard/pages/pdf-viewer/pdf-viewer.extension.ts';
 import pdfViewerWidget from './extensions/site/widgets/custom-elements/pdf-viewer/pdf-viewer.extension.ts';
@@ -6,10 +5,13 @@ import appInstalled from './extensions/backend/events/app-installed/app-installe
 import appRemoved from './extensions/backend/events/app-removed/app-removed.extension.ts';
 import planChanged from './extensions/backend/events/plan-changed/plan-changed.extension.ts';
 
-export default app()
-  .use(dataExtension)
-  .use(pdfViewerPage)
-  .use(pdfViewerWidget)
-  .use(appInstalled)
-  .use(appRemoved)
-  .use(planChanged);
+export default {
+  extensions: [
+    dataExtension,
+    pdfViewerPage,
+    pdfViewerWidget,
+    appInstalled,
+    appRemoved,
+    planChanged,
+  ],
+};

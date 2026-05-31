@@ -10,7 +10,7 @@ import {
 export interface SettingsRecord {
   _id?: string;
   key: string;
-  settingsJson?: string;
+  settings?: Record<string, unknown> | WidgetSettings;
 }
 
 async function findSettingsRow(): Promise<SettingsRecord | undefined> {
@@ -25,9 +25,12 @@ async function findSettingsRow(): Promise<SettingsRecord | undefined> {
 export async function loadWidgetSettings(): Promise<WidgetSettings> {
   try {
     const row = await findSettingsRow();
-    if (!row?.settingsJson) return { ...DEFAULT_SETTINGS };
-    const parsed = JSON.parse(row.settingsJson) as Record<string, unknown>;
-    return migrateSettings(parsed);
+    if (!row?.settings) return { ...DEFAULT_SETTINGS };
+    const raw =
+      typeof row.settings === 'string'
+        ? (JSON.parse(row.settings) as Record<string, unknown>)
+        : (row.settings as Record<string, unknown>);
+    return migrateSettings(raw);
   } catch (err) {
     console.error('[settings-store] load failed:', err);
     return { ...DEFAULT_SETTINGS };
@@ -44,7 +47,7 @@ export async function saveWidgetSettings(
   const payload: SettingsRecord = {
     ...(existing ?? {}),
     key: SETTINGS_DOC_KEY,
-    settingsJson: JSON.stringify(settings),
+    settings: settings as unknown as Record<string, unknown>,
   };
 
   if (existing?._id) {
