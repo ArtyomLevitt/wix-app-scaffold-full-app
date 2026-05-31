@@ -1,0 +1,6 @@
+{
+  "$schema": "https://dev.wix.com/wix-cli/schemas/wix-config.json",
+  "appId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "projectId": "pdf-viewer",
+  "siteId": "00000000-0000-4000-8000-000000000001"
+}

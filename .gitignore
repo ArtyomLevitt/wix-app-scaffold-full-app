@@ -1,7 +1,8 @@
+# secrets
+.env.local
 node_modules/
 dist/
 .wix/
-.env
-.env.local
 *.log
 .DS_Store
+.astro/
