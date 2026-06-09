@@ -1,0 +1,6 @@
+{
+  "$schema": "https://dev.wix.com/wix-cli/schemas/wix-config.json",
+  "appId": "00000000-0000-4000-8000-000000000001",
+  "projectId": "plan-pricing-table",
+  "siteId": "00000000-0000-4000-8000-000000000002"
+}

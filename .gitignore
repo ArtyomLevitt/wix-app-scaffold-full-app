@@ -1,7 +1,11 @@
 node_modules/
 dist/
 .wix/
+.astro/
 .env
 .env.local
 *.log
 .DS_Store
+
+# secrets
+src/**/supabase-client.ts
